@@ -10,14 +10,14 @@
     .app{max-width:1100px;margin:0 auto;padding:24px}.top{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap}
     h1{margin:0;font-size:28px}.subtitle{color:var(--muted);font-size:14px;margin-top:4px}
     .tabs{display:flex;gap:8px;flex-wrap:wrap}.tab{border:1px solid var(--line);background:#fff;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600}.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
     .metric .label{color:var(--muted);font-size:13px}.metric .value{font-size:28px;font-weight:800;margin-top:8px}.metric small{color:var(--muted)}
     .section{margin-top:16px}.section-title{font-weight:800;margin-bottom:12px;font-size:18px}
     .two{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
     label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}input,select,button,textarea{font:inherit}input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:#fff}textarea{min-height:90px;resize:vertical}
     .full{grid-column:1/-1}.btn{border:0;background:var(--accent);color:#fff;padding:12px 16px;border-radius:12px;font-weight:800;cursor:pointer}.btn.secondary{background:#fff;color:var(--text);border:1px solid var(--line)}.btn.danger{background:var(--danger)}
     .progress{height:12px;background:#eef2f7;border-radius:999px;overflow:hidden;margin-top:10px}.bar{height:100%;background:var(--accent);width:0}.bar.over{background:var(--danger)}
-    .list{display:flex;flex-direction:column;gap:10px}.row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:14px}.row-title{font-weight:700}.row-meta{font-size:12px;color:var(--muted);margin-top:4px}.amount{font-weight:800}.delete{border:0;background:transparent;color:var(--danger);cursor:pointer;font-size:18px}
+    .list{display:flex;flex-direction:column;gap:10px}.row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:14px}.row-title{font-weight:700}.row-meta{font-size:12px;color:var(--muted);margin-top:4px}.amount{font-weight:800}.amount.income{color:var(--ok)}.amount.expense{color:var(--text)}.row-actions{display:flex;gap:4px}.edit,.delete{border:0;background:transparent;cursor:pointer;font-size:18px;padding:5px}.edit{color:var(--accent)}.delete{color:var(--danger)}
     .chips{display:flex;flex-wrap:wrap;gap:8px}.chip{padding:7px 10px;border-radius:999px;background:#eef2ff;font-size:12px;font-weight:700}
     .chart{display:flex;flex-direction:column;gap:10px}.chart-row{display:grid;grid-template-columns:120px 1fr 90px;gap:10px;align-items:center}.chart-track{height:10px;background:#eef2f7;border-radius:999px;overflow:hidden}.chart-fill{height:100%;background:var(--accent);border-radius:999px}
     .filters{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}.muted{color:var(--muted)}.empty{padding:24px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
@@ -40,17 +40,18 @@
 
   <section id="dashboard" class="page">
     <div class="grid">
-      <div class="card metric"><div class="label">Потрачено в этом месяце</div><div id="spentMetric" class="value">0 €</div><small id="monthLabel"></small></div>
-      <div class="card metric"><div class="label">Месячный бюджет</div><div id="budgetMetric" class="value">0 €</div><small>Можно изменить во вкладке «Бюджет»</small></div>
-      <div class="card metric"><div class="label">Осталось</div><div id="leftMetric" class="value">0 €</div><small id="leftHint"></small></div>
+      <div class="card metric"><div class="label">Расходы в этом месяце</div><div id="spentMetric" class="value">0 Br</div><small id="monthLabel"></small></div>
+      <div class="card metric"><div class="label">Доходы в этом месяце</div><div id="incomeMetric" class="value" style="color:var(--ok)">0 Br</div><small>Все поступления за месяц</small></div>
+      <div class="card metric"><div class="label">Баланс месяца</div><div id="balanceMetric" class="value">0 Br</div><small>Доходы минус расходы</small></div>
+      <div class="card metric"><div class="label">Осталось по бюджету</div><div id="leftMetric" class="value">0 Br</div><small id="leftHint"></small></div>
     </div>
 
     <div id="paydayCard" class="card section hidden">
       <div class="section-title">💸 Бюджет до зарплаты</div>
       <div class="grid">
-        <div class="metric"><div class="label">Осталось до даты</div><div id="paydayLeft" class="value">0 €</div><small id="paydayPeriod"></small></div>
+        <div class="metric"><div class="label">Осталось до даты</div><div id="paydayLeft" class="value">0 Br</div><small id="paydayPeriod"></small></div>
         <div class="metric"><div class="label">Осталось дней</div><div id="paydayDays" class="value">0</div><small>Включая сегодня</small></div>
-        <div class="metric"><div class="label">Можно тратить в день</div><div id="paydayDaily" class="value">0 €</div><small id="paydayHint"></small></div>
+        <div class="metric"><div class="label">Можно тратить в день</div><div id="paydayDaily" class="value">0 Br</div><small id="paydayHint"></small></div>
       </div>
       <div class="progress"><div id="paydayBar" class="bar"></div></div>
     </div>
@@ -64,7 +65,7 @@
         <div class="section-title">Бюджет месяца</div>
         <div id="budgetText" class="muted"></div>
         <div class="progress"><div id="budgetBar" class="bar"></div></div>
-        <div style="margin-top:18px" class="section-title">Последние расходы</div>
+        <div style="margin-top:18px" class="section-title">Последние операции</div>
         <div id="recentList" class="list"></div>
       </div>
     </div>
@@ -72,22 +73,24 @@
 
   <section id="add" class="page hidden">
     <div class="card" style="max-width:760px;margin:0 auto">
-      <div class="section-title">Добавить расход</div>
+      <div id="formTitle" class="section-title">Добавить запись</div>
       <form id="expenseForm" class="form-grid">
+        <div><label>Тип записи</label><select id="entryType"><option value="expense">Расход</option><option value="income">Доход</option></select></div>
         <div><label>Сумма</label><input id="amount" type="number" min="0.01" step="0.01" required placeholder="24.50"></div>
         <div><label>Категория</label><select id="category" required></select></div>
-        <div><label>Кто потратил</label><select id="person" required></select></div>
+        <div><label id="personLabel">Кто потратил</label><select id="person" required></select></div>
         <div><label>Дата</label><input id="date" type="date" required></div>
         <div class="full"><label>Комментарий</label><input id="note" type="text" maxlength="120" placeholder="Например: супермаркет"></div>
-        <div class="full"><button class="btn" type="submit">Добавить расход</button></div>
+        <div class="full" style="display:flex;gap:8px"><button id="submitEntry" class="btn" type="submit">Добавить запись</button><button id="cancelEdit" class="btn secondary hidden" type="button">Отмена</button></div>
       </form>
     </div>
   </section>
 
   <section id="history" class="page hidden">
     <div class="card">
-      <div class="section-title">История расходов</div>
+      <div class="section-title">История операций</div>
       <div class="filters">
+        <div><label>Тип</label><select id="filterType"><option value="">Все операции</option><option value="expense">Расходы</option><option value="income">Доходы</option></select></div>
         <div><label>Месяц</label><input id="filterMonth" type="month"></div>
         <div><label>Категория</label><select id="filterCategory"></select></div>
         <div><label>Кто</label><select id="filterPerson"></select></div>
@@ -124,7 +127,7 @@
           <button id="restoreBackup" class="btn" style="flex:1">Восстановить</button>
         </div>
         <div class="section-title" style="margin-top:22px">Данные</div>
-        <button id="clearData" class="btn danger">Удалить все расходы</button>
+        <button id="clearData" class="btn danger">Удалить все операции</button>
       </div>
     </div>
   </section>
@@ -133,12 +136,14 @@
 </div>
 
 <script>
-const DEFAULT_CATEGORIES = ['Продукты','Жильё','Транспорт','Дети','Здоровье','Развлечения','Покупки','Цифровые продукты','Кафе','Другое'];
+const EXPENSE_CATEGORIES = ['Продукты','Жильё','Транспорт','Дети','Здоровье','Развлечения','Покупки','Цифровые продукты','Кафе','Другое'];
+const INCOME_CATEGORIES = ['Зарплата','Подработка','Подарки','Возврат','Пособия','Другое'];
 const state = {
   expenses: JSON.parse(localStorage.getItem('family-expenses-items') || '[]'),
   settings: JSON.parse(localStorage.getItem('family-expenses-settings') || '{"budget":2000,"currency":"Br","people":["Я","Партнёр","Общее"]}')
 };
-// Одноразовая миграция: для ранее созданной версии с EUR переключаем валюту на BYN.
+state.expenses = state.expenses.map(e=>({...e,type:e.type||'expense'}));
+let editingId = null;
 if (!localStorage.getItem('family-expenses-byn-migrated')) {
   if (!state.settings.currency || state.settings.currency === '€') state.settings.currency = 'Br';
   localStorage.setItem('family-expenses-byn-migrated', '1');
@@ -149,126 +154,31 @@ const fmt = n => `${Number(n||0).toLocaleString('ru-RU',{minimumFractionDigits:0
 const monthKey = d => d.slice(0,7);
 const currentMonth = () => new Date().toISOString().slice(0,7);
 const save = () => { localStorage.setItem('family-expenses-items', JSON.stringify(state.expenses)); localStorage.setItem('family-expenses-settings', JSON.stringify(state.settings)); };
-
-function encodeBackup(data){
-  const json=JSON.stringify(data);
-  const bytes=new TextEncoder().encode(json);
-  let binary='';
-  bytes.forEach(b=>binary+=String.fromCharCode(b));
-  return 'FEXP1.'+btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-}
-function decodeBackup(code){
-  const clean=String(code||'').trim();
-  if(!clean.startsWith('FEXP1.')) throw new Error('Неверный формат кода');
-  let b64=clean.slice(6).replace(/-/g,'+').replace(/_/g,'/');
-  while(b64.length%4)b64+='=';
-  const binary=atob(b64);
-  const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
-  const data=JSON.parse(new TextDecoder().decode(bytes));
-  if(!data || !Array.isArray(data.expenses) || !data.settings || typeof data.settings!=='object') throw new Error('В коде нет данных приложения');
-  return data;
-}
-
-
-function initSelects(){
-  $('#category').innerHTML = DEFAULT_CATEGORIES.map(x=>`<option>${x}</option>`).join('');
-  $('#filterCategory').innerHTML = `<option value="">Все категории</option>` + DEFAULT_CATEGORIES.map(x=>`<option>${x}</option>`).join('');
-  const people = state.settings.people.length ? state.settings.people : ['Я'];
-  $('#person').innerHTML = people.map(x=>`<option>${x}</option>`).join('');
-  $('#filterPerson').innerHTML = `<option value="">Все</option>` + people.map(x=>`<option>${x}</option>`).join('');
-  $('#peopleChips').innerHTML = people.map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join('');
-}
+function encodeBackup(data){const json=JSON.stringify(data),bytes=new TextEncoder().encode(json);let binary='';bytes.forEach(b=>binary+=String.fromCharCode(b));return 'FEXP1.'+btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function decodeBackup(code){const clean=String(code||'').trim();if(!clean.startsWith('FEXP1.')) throw new Error('Неверный формат кода');let b64=clean.slice(6).replace(/-/g,'+').replace(/_/g,'/');while(b64.length%4)b64+='=';const binary=atob(b64),bytes=Uint8Array.from(binary,c=>c.charCodeAt(0)),data=JSON.parse(new TextDecoder().decode(bytes));if(!data||!Array.isArray(data.expenses)||!data.settings||typeof data.settings!=='object')throw new Error('В коде нет данных приложения');return data;}
+function categoryList(type){ return type==='income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES; }
+function refreshCategorySelect(){const type=$('#entryType').value,current=$('#category').value;$('#category').innerHTML=categoryList(type).map(x=>`<option>${x}</option>`).join('');if(categoryList(type).includes(current)) $('#category').value=current;$('#personLabel').textContent=type==='income'?'Кто получил':'Кто потратил';}
+function initSelects(){refreshCategorySelect();const allCategories=[...new Set([...EXPENSE_CATEGORIES,...INCOME_CATEGORIES])];$('#filterCategory').innerHTML=`<option value="">Все категории</option>`+allCategories.map(x=>`<option>${x}</option>`).join('');const people=state.settings.people.length?state.settings.people:['Я'],currentPerson=$('#person').value;$('#person').innerHTML=people.map(x=>`<option>${x}</option>`).join('');if(people.includes(currentPerson))$('#person').value=currentPerson;$('#filterPerson').innerHTML=`<option value="">Все</option>`+people.map(x=>`<option>${x}</option>`).join('');$('#peopleChips').innerHTML=people.map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join('');}
 function escapeHtml(s=''){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-function renderDashboard(){
-  const m=currentMonth(); const items=state.expenses.filter(e=>monthKey(e.date)===m); const spent=items.reduce((s,e)=>s+Number(e.amount),0); const budget=Number(state.settings.budget||0); const left=budget-spent;
-  $('#spentMetric').textContent=fmt(spent); $('#budgetMetric').textContent=fmt(budget); $('#leftMetric').textContent=fmt(left); $('#leftMetric').style.color=left<0?'var(--danger)':'var(--ok)';
-  $('#monthLabel').textContent=new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric'}).format(new Date(m+'-01'));
-  const pct=budget>0?spent/budget*100:0; $('#budgetBar').style.width=Math.min(pct,100)+'%'; $('#budgetBar').classList.toggle('over',pct>100); $('#budgetText').textContent=budget?`Использовано ${Math.round(pct)}% бюджета`:'Бюджет пока не задан'; $('#leftHint').textContent=left<0?'Бюджет превышен':'До конца бюджета';
-  const by={}; items.forEach(e=>by[e.category]=(by[e.category]||0)+Number(e.amount)); const max=Math.max(1,...Object.values(by));
-  $('#categoryChart').innerHTML=Object.keys(by).length?Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="chart-row"><div>${escapeHtml(k)}</div><div class="chart-track"><div class="chart-fill" style="width:${v/max*100}%"></div></div><div style="text-align:right;font-weight:700">${fmt(v)}</div></div>`).join(''):'<div class="empty">В этом месяце расходов пока нет.</div>';
-  const recent=[...state.expenses].sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt).slice(0,5); $('#recentList').innerHTML=recent.length?recent.map(rowHtml).join(''):'<div class="empty">Добавьте первый расход.</div>';
-
-  const pb=Number(state.settings.paydayBudget||0), ps=state.settings.paydayStartDate, pe=state.settings.paydayEndDate;
-  const pc=$('#paydayCard');
-  if(pb>0 && ps && pe){
-    pc.classList.remove('hidden');
-    const today=new Date(); today.setHours(0,0,0,0);
-    const end=new Date(pe+'T00:00:00');
-    const start=new Date(ps+'T00:00:00');
-    const periodSpent=state.expenses.filter(e=>{const d=new Date(e.date+'T00:00:00');return d>=start&&d<=end;}).reduce((sum,e)=>sum+Number(e.amount),0);
-    const periodLeft=pb-periodSpent;
-    const days=Math.max(0,Math.ceil((end-today)/86400000)+1);
-    const daily=days>0?Math.max(0,periodLeft)/days:0;
-    const ppct=pb>0?periodSpent/pb*100:0;
-    $('#paydayLeft').textContent=fmt(periodLeft); $('#paydayLeft').style.color=periodLeft<0?'var(--danger)':'var(--ok)';
-    $('#paydayDays').textContent=String(days);
-    $('#paydayDaily').textContent=fmt(daily);
-    $('#paydayPeriod').textContent=`Потрачено ${fmt(periodSpent)} из ${fmt(pb)} · до ${end.toLocaleDateString('ru-RU')}`;
-    $('#paydayHint').textContent=days===0?'Дата уже наступила':periodLeft<0?'Лимит превышен':`Без превышения бюджета до ${end.toLocaleDateString('ru-RU')}`;
-    $('#paydayBar').style.width=Math.min(ppct,100)+'%'; $('#paydayBar').classList.toggle('over',ppct>100);
-  } else pc.classList.add('hidden');
-}
-function rowHtml(e){ return `<div class="row"><div><div class="row-title">${escapeHtml(e.category)}${e.note?` · ${escapeHtml(e.note)}`:''}</div><div class="row-meta">${new Date(e.date+'T12:00:00').toLocaleDateString('ru-RU')} · ${escapeHtml(e.person)}</div></div><div class="amount">${fmt(e.amount)}</div><button class="delete" data-id="${e.id}" title="Удалить">×</button></div>`; }
-function renderHistory(){
-  let items=[...state.expenses]; const m=$('#filterMonth').value, c=$('#filterCategory').value, p=$('#filterPerson').value; if(m)items=items.filter(e=>monthKey(e.date)===m); if(c)items=items.filter(e=>e.category===c); if(p)items=items.filter(e=>e.person===p); items.sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt);
-  $('#historyList').innerHTML=items.length?items.map(rowHtml).join(''):'<div class="empty">Ничего не найдено.</div>';
-}
-function renderSettings(){
-  $('#monthlyBudget').value=state.settings.budget??0;
-  $('#paydayBudget').value=state.settings.paydayBudget??'';
-  $('#paydayStartDate').value=state.settings.paydayStartDate||new Date().toISOString().slice(0,10);
-  $('#paydayEndDate').value=state.settings.paydayEndDate||'';
-  $('#currency').value=state.settings.currency||'Br'; initSelects();
-}
-function renderAll(){ initSelects(); renderDashboard(); renderHistory(); renderSettings(); }
-
-document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); b.classList.add('active'); document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden')); $('#'+b.dataset.tab).classList.remove('hidden'); if(b.dataset.tab==='history')renderHistory(); }));
-$('#date').value=new Date().toISOString().slice(0,10); $('#filterMonth').value=currentMonth();
-$('#expenseForm').addEventListener('submit',e=>{ e.preventDefault(); state.expenses.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),amount:Number($('#amount').value),category:$('#category').value,person:$('#person').value,date:$('#date').value,note:$('#note').value.trim(),createdAt:Date.now()}); save(); e.target.reset(); $('#date').value=new Date().toISOString().slice(0,10); renderAll(); document.querySelector('[data-tab="dashboard"]').click(); });
-['#filterMonth','#filterCategory','#filterPerson'].forEach(s=>$(s).addEventListener('change',renderHistory));
-document.addEventListener('click',e=>{ if(e.target.matches('.delete')){ state.expenses=state.expenses.filter(x=>x.id!==e.target.dataset.id); save(); renderAll(); }});
-$('#saveSettings').addEventListener('click',()=>{
-  state.settings.budget=Number($('#monthlyBudget').value||0);
-  state.settings.paydayBudget=Number($('#paydayBudget').value||0);
-  state.settings.paydayStartDate=$('#paydayStartDate').value;
-  state.settings.paydayEndDate=$('#paydayEndDate').value;
-  state.settings.currency=$('#currency').value;
-  if(state.settings.paydayBudget>0 && (!state.settings.paydayStartDate || !state.settings.paydayEndDate)){ alert('Для бюджета до зарплаты укажите начало и конечную дату'); return; }
-  if(state.settings.paydayStartDate && state.settings.paydayEndDate && state.settings.paydayEndDate < state.settings.paydayStartDate){ alert('Конечная дата должна быть не раньше начала периода'); return; }
-  save(); renderAll(); alert('Настройки сохранены');
-});
-$('#addPerson').addEventListener('click',()=>{ const name=$('#newPerson').value.trim(); if(!name)return; if(!state.settings.people.includes(name))state.settings.people.push(name); $('#newPerson').value=''; save(); renderAll(); });
-
-$('#makeBackup').addEventListener('click',()=>{
-  save();
-  const payload={version:1,createdAt:new Date().toISOString(),expenses:state.expenses,settings:state.settings};
-  $('#backupCode').value=encodeBackup(payload);
-  $('#backupCode').focus();
-  $('#backupCode').select();
-  alert('Код создан. Сохраните его отдельно — например, в заметках или отправьте себе сообщением.');
-});
-$('#copyBackup').addEventListener('click',async()=>{
-  const code=$('#backupCode').value.trim();
-  if(!code){ alert('Сначала создайте код или вставьте сохранённый.'); return; }
-  try{ await navigator.clipboard.writeText(code); alert('Код скопирован'); }
-  catch(_){ $('#backupCode').focus(); $('#backupCode').select(); alert('Код выделен. Выберите «Копировать».'); }
-});
-$('#restoreBackup').addEventListener('click',()=>{
-  const code=$('#backupCode').value.trim();
-  if(!code){ alert('Вставьте код восстановления.'); return; }
-  try{
-    const data=decodeBackup(code);
-    if(!confirm(`Восстановить резервную копию? Текущие данные будут заменены.\nРасходов в копии: ${data.expenses.length}`)) return;
-    state.expenses=data.expenses;
-    state.settings={...state.settings,...data.settings};
-    if(!Array.isArray(state.settings.people)) state.settings.people=['Я'];
-    save(); renderAll();
-    alert('Данные успешно восстановлены');
-  }catch(err){ alert('Не удалось восстановить: '+err.message); }
-});
-
-$('#clearData').addEventListener('click',()=>{ if(confirm('Удалить все расходы?')){state.expenses=[];save();renderAll();}});
-$('#exportCsv').addEventListener('click',()=>{ const rows=[['Дата','Сумма','Категория','Кто','Комментарий'],...state.expenses.map(e=>[e.date,e.amount,e.category,e.person,e.note])]; const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='family-expenses.csv'; a.click(); URL.revokeObjectURL(a.href); });
+function renderDashboard(){const m=currentMonth(),monthItems=state.expenses.filter(e=>monthKey(e.date)===m),expenseItems=monthItems.filter(e=>(e.type||'expense')==='expense'),incomeItems=monthItems.filter(e=>e.type==='income'),spent=expenseItems.reduce((s,e)=>s+Number(e.amount),0),income=incomeItems.reduce((s,e)=>s+Number(e.amount),0),balance=income-spent,budget=Number(state.settings.budget||0),left=budget-spent;$('#spentMetric').textContent=fmt(spent);$('#incomeMetric').textContent=fmt(income);$('#balanceMetric').textContent=fmt(balance);$('#balanceMetric').style.color=balance<0?'var(--danger)':'var(--ok)';$('#leftMetric').textContent=fmt(left);$('#leftMetric').style.color=left<0?'var(--danger)':'var(--ok)';$('#monthLabel').textContent=new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric'}).format(new Date(m+'-01'));const pct=budget>0?spent/budget*100:0;$('#budgetBar').style.width=Math.min(pct,100)+'%';$('#budgetBar').classList.toggle('over',pct>100);$('#budgetText').textContent=budget?`Использовано ${Math.round(pct)}% бюджета`:'Бюджет пока не задан';$('#leftHint').textContent=left<0?'Бюджет превышен':'До конца бюджета';const by={};expenseItems.forEach(e=>by[e.category]=(by[e.category]||0)+Number(e.amount));const max=Math.max(1,...Object.values(by));$('#categoryChart').innerHTML=Object.keys(by).length?Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="chart-row"><div>${escapeHtml(k)}</div><div class="chart-track"><div class="chart-fill" style="width:${v/max*100}%"></div></div><div style="text-align:right;font-weight:700">${fmt(v)}</div></div>`).join(''):'<div class="empty">В этом месяце расходов пока нет.</div>';const recent=[...state.expenses].sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt).slice(0,5);$('#recentList').innerHTML=recent.length?recent.map(rowHtml).join(''):'<div class="empty">Добавьте первую операцию.</div>';const pb=Number(state.settings.paydayBudget||0),ps=state.settings.paydayStartDate,pe=state.settings.paydayEndDate,pc=$('#paydayCard');if(pb>0&&ps&&pe){pc.classList.remove('hidden');const today=new Date();today.setHours(0,0,0,0);const end=new Date(pe+'T00:00:00'),start=new Date(ps+'T00:00:00'),periodSpent=state.expenses.filter(e=>{const d=new Date(e.date+'T00:00:00');return (e.type||'expense')==='expense'&&d>=start&&d<=end;}).reduce((sum,e)=>sum+Number(e.amount),0),periodLeft=pb-periodSpent,days=Math.max(0,Math.ceil((end-today)/86400000)+1),daily=days>0?Math.max(0,periodLeft)/days:0,ppct=pb>0?periodSpent/pb*100:0;$('#paydayLeft').textContent=fmt(periodLeft);$('#paydayLeft').style.color=periodLeft<0?'var(--danger)':'var(--ok)';$('#paydayDays').textContent=String(days);$('#paydayDaily').textContent=fmt(daily);$('#paydayPeriod').textContent=`Потрачено ${fmt(periodSpent)} из ${fmt(pb)} · до ${end.toLocaleDateString('ru-RU')}`;$('#paydayHint').textContent=days===0?'Дата уже наступила':periodLeft<0?'Лимит превышен':`Без превышения бюджета до ${end.toLocaleDateString('ru-RU')}`;$('#paydayBar').style.width=Math.min(ppct,100)+'%';$('#paydayBar').classList.toggle('over',ppct>100);}else pc.classList.add('hidden');}
+function rowHtml(e){const type=e.type||'expense',sign=type==='income'?'+':'−',kind=type==='income'?'Доход':'Расход';return `<div class="row"><div><div class="row-title">${escapeHtml(e.category)}${e.note?` · ${escapeHtml(e.note)}`:''}</div><div class="row-meta">${kind} · ${new Date(e.date+'T12:00:00').toLocaleDateString('ru-RU')} · ${escapeHtml(e.person)}</div></div><div class="amount ${type}">${sign}${fmt(e.amount)}</div><div class="row-actions"><button class="edit" data-id="${e.id}" title="Редактировать">✎</button><button class="delete" data-id="${e.id}" title="Удалить">×</button></div></div>`;}
+function renderHistory(){let items=[...state.expenses];const t=$('#filterType').value,m=$('#filterMonth').value,c=$('#filterCategory').value,p=$('#filterPerson').value;if(t)items=items.filter(e=>(e.type||'expense')===t);if(m)items=items.filter(e=>monthKey(e.date)===m);if(c)items=items.filter(e=>e.category===c);if(p)items=items.filter(e=>e.person===p);items.sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt);$('#historyList').innerHTML=items.length?items.map(rowHtml).join(''):'<div class="empty">Ничего не найдено.</div>';}
+function renderSettings(){$('#monthlyBudget').value=state.settings.budget??0;$('#paydayBudget').value=state.settings.paydayBudget??'';$('#paydayStartDate').value=state.settings.paydayStartDate||new Date().toISOString().slice(0,10);$('#paydayEndDate').value=state.settings.paydayEndDate||'';$('#currency').value=state.settings.currency||'Br';initSelects();}
+function renderAll(){initSelects();renderDashboard();renderHistory();renderSettings();}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));$('#'+b.dataset.tab).classList.remove('hidden');if(b.dataset.tab==='history')renderHistory();}));
+$('#date').value=new Date().toISOString().slice(0,10);$('#filterMonth').value=currentMonth();$('#entryType').addEventListener('change',refreshCategorySelect);
+function resetEntryForm(){editingId=null;$('#expenseForm').reset();$('#entryType').value='expense';refreshCategorySelect();$('#date').value=new Date().toISOString().slice(0,10);$('#formTitle').textContent='Добавить запись';$('#submitEntry').textContent='Добавить запись';$('#cancelEdit').classList.add('hidden');}
+$('#cancelEdit').addEventListener('click',resetEntryForm);
+$('#expenseForm').addEventListener('submit',e=>{e.preventDefault();const data={type:$('#entryType').value,amount:Number($('#amount').value),category:$('#category').value,person:$('#person').value,date:$('#date').value,note:$('#note').value.trim()};if(editingId){const item=state.expenses.find(x=>x.id===editingId);if(item)Object.assign(item,data,{updatedAt:Date.now()});}else state.expenses.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),...data,createdAt:Date.now()});save();resetEntryForm();renderAll();document.querySelector('[data-tab="dashboard"]').click();});
+['#filterType','#filterMonth','#filterCategory','#filterPerson'].forEach(s=>$(s).addEventListener('change',renderHistory));
+document.addEventListener('click',e=>{if(e.target.matches('.delete')){if(confirm('Удалить эту запись?')){state.expenses=state.expenses.filter(x=>x.id!==e.target.dataset.id);save();renderAll();}}if(e.target.matches('.edit')){const item=state.expenses.find(x=>x.id===e.target.dataset.id);if(!item)return;editingId=item.id;$('#entryType').value=item.type||'expense';refreshCategorySelect();$('#amount').value=item.amount;$('#category').value=item.category;$('#person').value=item.person;$('#date').value=item.date;$('#note').value=item.note||'';$('#formTitle').textContent='Редактировать запись';$('#submitEntry').textContent='Сохранить изменения';$('#cancelEdit').classList.remove('hidden');document.querySelector('[data-tab="add"]').click();window.scrollTo({top:0,behavior:'smooth'});}});
+$('#saveSettings').addEventListener('click',()=>{state.settings.budget=Number($('#monthlyBudget').value||0);state.settings.paydayBudget=Number($('#paydayBudget').value||0);state.settings.paydayStartDate=$('#paydayStartDate').value;state.settings.paydayEndDate=$('#paydayEndDate').value;state.settings.currency=$('#currency').value;if(state.settings.paydayBudget>0&&(!state.settings.paydayStartDate||!state.settings.paydayEndDate)){alert('Для бюджета до зарплаты укажите начало и конечную дату');return;}if(state.settings.paydayStartDate&&state.settings.paydayEndDate&&state.settings.paydayEndDate<state.settings.paydayStartDate){alert('Конечная дата должна быть не раньше начала периода');return;}save();renderAll();alert('Настройки сохранены');});
+$('#addPerson').addEventListener('click',()=>{const name=$('#newPerson').value.trim();if(!name)return;if(!state.settings.people.includes(name))state.settings.people.push(name);$('#newPerson').value='';save();renderAll();});
+$('#makeBackup').addEventListener('click',()=>{save();const payload={version:1,createdAt:new Date().toISOString(),expenses:state.expenses,settings:state.settings};$('#backupCode').value=encodeBackup(payload);$('#backupCode').focus();$('#backupCode').select();alert('Код создан. Сохраните его отдельно — например, в заметках или отправьте себе сообщением.');});
+$('#copyBackup').addEventListener('click',async()=>{const code=$('#backupCode').value.trim();if(!code){alert('Сначала создайте код или вставьте сохранённый.');return;}try{await navigator.clipboard.writeText(code);alert('Код скопирован');}catch(_){$('#backupCode').focus();$('#backupCode').select();alert('Код выделен. Выберите «Копировать».');}});
+$('#restoreBackup').addEventListener('click',()=>{const code=$('#backupCode').value.trim();if(!code){alert('Вставьте код восстановления.');return;}try{const data=decodeBackup(code);if(!confirm(`Восстановить резервную копию? Текущие данные будут заменены.\nОпераций в копии: ${data.expenses.length}`))return;state.expenses=data.expenses.map(e=>({...e,type:e.type||'expense'}));state.settings={...state.settings,...data.settings};if(!Array.isArray(state.settings.people))state.settings.people=['Я'];save();renderAll();alert('Данные успешно восстановлены');}catch(err){alert('Не удалось восстановить: '+err.message);}});
+$('#clearData').addEventListener('click',()=>{if(confirm('Удалить все операции?')){state.expenses=[];save();renderAll();}});
+$('#exportCsv').addEventListener('click',()=>{const rows=[['Тип','Дата','Сумма','Категория','Кто','Комментарий'],...state.expenses.map(e=>[(e.type||'expense')==='income'?'Доход':'Расход',e.date,e.amount,e.category,e.person,e.note])],csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='family-expenses.csv';a.click();URL.revokeObjectURL(a.href);});
 renderAll();
 </script>
 </body>
