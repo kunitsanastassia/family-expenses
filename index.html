@@ -40,7 +40,8 @@
 
   <section id="dashboard" class="page">
     <div class="grid">
-      <div class="card metric"><div class="label">Доступный остаток</div><div id="balanceMetric" class="value">0 Br</div><small>Все доходы минус все расходы</small></div>
+      <div class="card metric"><div class="label">Доступный остаток</div><div id="balanceMetric" class="value">0 Br</div><small>Все доходы минус обычные расходы</small></div>
+      <div class="card metric"><div class="label">Овердрафт</div><div id="overdraftMetric" class="value">0 Br</div><small>Отдельно от основного баланса</small></div>
     </div>
 
     <div class="card section">
@@ -78,7 +79,7 @@
     <div class="card" style="max-width:760px;margin:0 auto">
       <div id="formTitle" class="section-title">Добавить запись</div>
       <form id="expenseForm" class="form-grid">
-        <div><label>Тип записи</label><select id="entryType"><option value="expense">Расход</option><option value="income">Доход</option></select></div>
+        <div><label>Тип записи</label><select id="entryType"><option value="expense">Расход</option><option value="income">Доход</option><option value="overdraft">Овердрафт</option></select></div>
         <div><label>Сумма</label><input id="amount" type="number" min="0.01" step="0.01" required placeholder="24.50"></div>
         <div><label>Категория</label><select id="category" required></select></div>
         <div><label id="personLabel">Кто потратил</label><select id="person" required></select></div>
@@ -98,7 +99,7 @@
         <div class="metric"><div class="label">Разница</div><div id="historyBalance" class="value">0 Br</div></div>
       </div>
       <div class="filters">
-        <div><label>Тип</label><select id="filterType"><option value="">Все операции</option><option value="expense">Расходы</option><option value="income">Доходы</option></select></div>
+        <div><label>Тип</label><select id="filterType"><option value="">Все операции</option><option value="expense">Расходы</option><option value="income">Доходы</option><option value="overdraft">Овердрафт</option></select></div>
         <div><label>Месяц</label><input id="filterMonth" type="month"></div>
         <div><label>Категория</label><select id="filterCategory"></select></div>
         <div><label>Кто</label><select id="filterPerson"></select></div>
@@ -163,14 +164,15 @@ const save = () => { localStorage.setItem('family-expenses-items', JSON.stringif
 function encodeBackup(data){const json=JSON.stringify(data),bytes=new TextEncoder().encode(json);let binary='';bytes.forEach(b=>binary+=String.fromCharCode(b));return 'FEXP1.'+btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 function decodeBackup(code){const clean=String(code||'').trim();if(!clean.startsWith('FEXP1.')) throw new Error('Неверный формат кода');let b64=clean.slice(6).replace(/-/g,'+').replace(/_/g,'/');while(b64.length%4)b64+='=';const binary=atob(b64),bytes=Uint8Array.from(binary,c=>c.charCodeAt(0)),data=JSON.parse(new TextDecoder().decode(bytes));if(!data||!Array.isArray(data.expenses)||!data.settings||typeof data.settings!=='object')throw new Error('В коде нет данных приложения');return data;}
 function categoryList(type){ return type==='income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES; }
-function refreshCategorySelect(){const type=$('#entryType').value,current=$('#category').value;$('#category').innerHTML=categoryList(type).map(x=>`<option>${x}</option>`).join('');if(categoryList(type).includes(current)) $('#category').value=current;$('#personLabel').textContent=type==='income'?'Кто получил':'Кто потратил';}
+function refreshCategorySelect(){const type=$('#entryType').value,current=$('#category').value;$('#category').innerHTML=categoryList(type).map(x=>`<option>${x}</option>`).join('');if(categoryList(type).includes(current)) $('#category').value=current;$('#personLabel').textContent=type==='income'?'Кто получил':type==='overdraft'?'Кто использовал':'Кто потратил';}
 function initSelects(){refreshCategorySelect();const allCategories=[...new Set([...EXPENSE_CATEGORIES,...INCOME_CATEGORIES])];$('#filterCategory').innerHTML=`<option value="">Все категории</option>`+allCategories.map(x=>`<option>${x}</option>`).join('');const people=state.settings.people.length?state.settings.people:['Я'],currentPerson=$('#person').value;$('#person').innerHTML=people.map(x=>`<option>${x}</option>`).join('');if(people.includes(currentPerson))$('#person').value=currentPerson;$('#filterPerson').innerHTML=`<option value="">Все</option>`+people.map(x=>`<option>${x}</option>`).join('');$('#peopleChips').innerHTML=people.map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join('');}
 function escapeHtml(s=''){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function renderDashboard(){
   const m=currentMonth(),monthItems=state.expenses.filter(e=>monthKey(e.date)===m),expenseItems=monthItems.filter(e=>(e.type||'expense')==='expense'),incomeItems=monthItems.filter(e=>e.type==='income');
   const spent=expenseItems.reduce((s,e)=>s+Number(e.amount),0),income=incomeItems.reduce((s,e)=>s+Number(e.amount),0);
   const totalIncome=state.expenses.filter(e=>e.type==='income').reduce((s,e)=>s+Number(e.amount),0),totalSpent=state.expenses.filter(e=>(e.type||'expense')==='expense').reduce((s,e)=>s+Number(e.amount),0),balance=totalIncome-totalSpent;
-  $('#balanceMetric').textContent=fmt(balance);$('#balanceMetric').style.color=balance<0?'var(--danger)':'var(--ok)';
+  const overdraftTotal=state.expenses.filter(e=>e.type==='overdraft').reduce((s,e)=>s+Number(e.amount),0);
+  $('#balanceMetric').textContent=fmt(balance);$('#balanceMetric').style.color=balance<0?'var(--danger)':'var(--ok)';$('#overdraftMetric').textContent=fmt(overdraftTotal);$('#overdraftMetric').style.color=overdraftTotal>0?'var(--danger)':'var(--text)';
   const by={};expenseItems.forEach(e=>by[e.category]=(by[e.category]||0)+Number(e.amount));const max=Math.max(1,...Object.values(by));
   $('#categoryChart').innerHTML=Object.keys(by).length?Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="chart-row"><div>${escapeHtml(k)}</div><div class="chart-track"><div class="chart-fill" style="width:${v/max*100}%"></div></div><div style="text-align:right;font-weight:700">${fmt(v)}</div></div>`).join(''):'<div class="empty">В этом месяце расходов пока нет.</div>';
   const recent=[...state.expenses].sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt).slice(0,5);$('#recentList').innerHTML=recent.length?recent.map(rowHtml).join(''):'<div class="empty">Добавьте первую операцию.</div>';
@@ -186,7 +188,7 @@ function renderDashboard(){
     const base=periodLeft+periodSpent,ppct=base>0?periodSpent/base*100:0;$('#paydayBar').style.width=Math.min(Math.max(ppct,0),100)+'%';$('#paydayBar').classList.toggle('over',periodLeft<0);
   }else pc.classList.add('hidden');
 }
-function rowHtml(e){const type=e.type||'expense',sign=type==='income'?'+':'−',kind=type==='income'?'Доход':'Расход';return `<div class="row"><div><div class="row-title">${escapeHtml(e.category)}${e.note?` · ${escapeHtml(e.note)}`:''}</div><div class="row-meta">${kind} · ${new Date(e.date+'T12:00:00').toLocaleDateString('ru-RU')} · ${escapeHtml(e.person)}</div></div><div class="amount ${type}">${sign}${fmt(e.amount)}</div><div class="row-actions"><button class="edit" data-id="${e.id}" title="Редактировать">✎</button><button class="delete" data-id="${e.id}" title="Удалить">×</button></div></div>`;}
+function rowHtml(e){const type=e.type||'expense',sign=type==='income'?'+':'−',kind=type==='income'?'Доход':type==='overdraft'?'Овердрафт':'Расход';return `<div class="row"><div><div class="row-title">${escapeHtml(e.category)}${e.note?` · ${escapeHtml(e.note)}`:''}</div><div class="row-meta">${kind} · ${new Date(e.date+'T12:00:00').toLocaleDateString('ru-RU')} · ${escapeHtml(e.person)}</div></div><div class="amount ${type}"${type==='overdraft'?' style="color:var(--danger)"':''}>${sign}${fmt(e.amount)}</div><div class="row-actions"><button class="edit" data-id="${e.id}" title="Редактировать">✎</button><button class="delete" data-id="${e.id}" title="Удалить">×</button></div></div>`;}
 function renderHistory(){let items=[...state.expenses];const t=$('#filterType').value,m=$('#filterMonth').value,c=$('#filterCategory').value,p=$('#filterPerson').value;const monthItems=m?state.expenses.filter(e=>monthKey(e.date)===m):state.expenses,monthIncome=monthItems.filter(e=>e.type==='income').reduce((s,e)=>s+Number(e.amount),0),monthSpent=monthItems.filter(e=>(e.type||'expense')==='expense').reduce((s,e)=>s+Number(e.amount),0),monthBalance=monthIncome-monthSpent;$('#historyIncome').textContent=fmt(monthIncome);$('#historySpent').textContent=fmt(monthSpent);$('#historyBalance').textContent=fmt(monthBalance);$('#historyBalance').style.color=monthBalance<0?'var(--danger)':'var(--ok)';if(t)items=items.filter(e=>(e.type||'expense')===t);if(m)items=items.filter(e=>monthKey(e.date)===m);if(c)items=items.filter(e=>e.category===c);if(p)items=items.filter(e=>e.person===p);items.sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt);$('#historyList').innerHTML=items.length?items.map(rowHtml).join(''):'<div class="empty">Ничего не найдено.</div>';}
 function renderSettings(){$('#paydayStartDate').value=state.settings.paydayStartDate||new Date().toISOString().slice(0,10);$('#paydayEndDate').value=state.settings.paydayEndDate||'';$('#currency').value=state.settings.currency||'Br';initSelects();}
 function renderAll(){initSelects();renderDashboard();renderHistory();renderSettings();}
@@ -205,7 +207,7 @@ $('#makeBackup').addEventListener('click',()=>{save();const payload={version:1,c
 $('#copyBackup').addEventListener('click',async()=>{const code=$('#backupCode').value.trim();if(!code){alert('Сначала создайте код или вставьте сохранённый.');return;}try{await navigator.clipboard.writeText(code);alert('Код скопирован');}catch(_){$('#backupCode').focus();$('#backupCode').select();alert('Код выделен. Выберите «Копировать».');}});
 $('#restoreBackup').addEventListener('click',()=>{const code=$('#backupCode').value.trim();if(!code){alert('Вставьте код восстановления.');return;}try{const data=decodeBackup(code);if(!confirm(`Восстановить резервную копию? Текущие данные будут заменены.\nОпераций в копии: ${data.expenses.length}`))return;state.expenses=data.expenses.map(e=>({...e,type:e.type||'expense'}));state.settings={...state.settings,...data.settings};if(!Array.isArray(state.settings.people))state.settings.people=['Я'];save();renderAll();alert('Данные успешно восстановлены');}catch(err){alert('Не удалось восстановить: '+err.message);}});
 $('#clearData').addEventListener('click',()=>{if(confirm('Удалить все операции?')){state.expenses=[];save();renderAll();}});
-$('#exportCsv').addEventListener('click',()=>{const rows=[['Тип','Дата','Сумма','Категория','Кто','Комментарий'],...state.expenses.map(e=>[(e.type||'expense')==='income'?'Доход':'Расход',e.date,e.amount,e.category,e.person,e.note])],csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='family-expenses.csv';a.click();URL.revokeObjectURL(a.href);});
+$('#exportCsv').addEventListener('click',()=>{const rows=[['Тип','Дата','Сумма','Категория','Кто','Комментарий'],...state.expenses.map(e=>[(e.type||'expense')==='income'?'Доход':(e.type||'expense')==='overdraft'?'Овердрафт':'Расход',e.date,e.amount,e.category,e.person,e.note])],csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='family-expenses.csv';a.click();URL.revokeObjectURL(a.href);});
 renderAll();
 </script>
 </body>
