@@ -176,12 +176,12 @@ function renderDashboard(){
   if(ps&&pe){
     pc.classList.remove('hidden');const today=new Date();today.setHours(0,0,0,0);const end=new Date(pe+'T00:00:00'),start=new Date(ps+'T00:00:00');
     const period=state.expenses.filter(e=>{const d=new Date(e.date+'T00:00:00');return d>=start&&d<=end;});
-    const periodIncome=period.filter(e=>e.type==='income').reduce((s,e)=>s+Number(e.amount),0),periodSpent=period.filter(e=>(e.type||'expense')==='expense').reduce((s,e)=>s+Number(e.amount),0),periodLeft=periodIncome-periodSpent;
+    const periodIncome=period.filter(e=>e.type==='income').reduce((s,e)=>s+Number(e.amount),0),periodSpent=period.filter(e=>(e.type||'expense')==='expense').reduce((s,e)=>s+Number(e.amount),0),periodLeft=balance;
     const days=Math.max(0,Math.ceil((end-today)/86400000)+1),daily=days>0?Math.max(0,periodLeft)/days:0;
     $('#paydayLeft').textContent=fmt(periodLeft);$('#paydayLeft').style.color=periodLeft<0?'var(--danger)':'var(--ok)';$('#paydayDays').textContent=String(days);$('#paydayDaily').textContent=fmt(daily);
-    $('#paydayPeriod').textContent=`Доходы ${fmt(periodIncome)} · расходы ${fmt(periodSpent)} · до ${end.toLocaleDateString('ru-RU')}`;
-    $('#paydayHint').textContent=days===0?'Дата уже наступила':periodIncome===0?'Добавьте доход за этот период':periodLeft<0?'Расходы превысили доходы':'Исходя из текущего остатка';
-    const ppct=periodIncome>0?periodSpent/periodIncome*100:0;$('#paydayBar').style.width=Math.min(ppct,100)+'%';$('#paydayBar').classList.toggle('over',ppct>100);
+    $('#paydayPeriod').textContent=`Текущий доступный остаток · до ${end.toLocaleDateString('ru-RU')}`;
+    $('#paydayHint').textContent=days===0?'Дата уже наступила':periodLeft<0?'Расходы превысили доходы':'Исходя из доступного остатка';
+    const base=periodLeft+periodSpent,ppct=base>0?periodSpent/base*100:0;$('#paydayBar').style.width=Math.min(Math.max(ppct,0),100)+'%';$('#paydayBar').classList.toggle('over',periodLeft<0);
   }else pc.classList.add('hidden');
 }
 function rowHtml(e){const type=e.type||'expense',sign=type==='income'?'+':'−',kind=type==='income'?'Доход':'Расход';return `<div class="row"><div><div class="row-title">${escapeHtml(e.category)}${e.note?` · ${escapeHtml(e.note)}`:''}</div><div class="row-meta">${kind} · ${new Date(e.date+'T12:00:00').toLocaleDateString('ru-RU')} · ${escapeHtml(e.person)}</div></div><div class="amount ${type}">${sign}${fmt(e.amount)}</div><div class="row-actions"><button class="edit" data-id="${e.id}" title="Редактировать">✎</button><button class="delete" data-id="${e.id}" title="Удалить">×</button></div></div>`;}
