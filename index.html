@@ -42,7 +42,16 @@
     <div class="grid">
       <div class="card metric"><div class="label">Расходы в этом месяце</div><div id="spentMetric" class="value">0 Br</div><small id="monthLabel"></small></div>
       <div class="card metric"><div class="label">Доходы в этом месяце</div><div id="incomeMetric" class="value" style="color:var(--ok)">0 Br</div><small>Все поступления за месяц</small></div>
-      <div class="card metric"><div class="label">Баланс месяца</div><div id="balanceMetric" class="value">0 Br</div><small>Доходы минус расходы</small></div>
+      <div class="card metric"><div class="label">Доступный остаток</div><div id="balanceMetric" class="value">0 Br</div><small>Все доходы минус все расходы</small></div>
+    </div>
+
+    <div class="card section">
+      <div class="section-title">⚖️ Корректировка остатка</div>
+      <div class="muted" style="font-size:13px;margin-bottom:12px">Если фактическая сумма отличается, укажите её здесь. Разница автоматически запишется в категорию «Другое».</div>
+      <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
+        <div style="flex:1;min-width:180px"><label>Фактически доступно сейчас</label><input id="actualBalance" type="number" min="0" step="0.01" placeholder="Например: 850"></div>
+        <button id="adjustBalance" class="btn">Скорректировать</button>
+      </div>
     </div>
 
     <div id="paydayCard" class="card section hidden">
@@ -156,7 +165,8 @@ function initSelects(){refreshCategorySelect();const allCategories=[...new Set([
 function escapeHtml(s=''){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function renderDashboard(){
   const m=currentMonth(),monthItems=state.expenses.filter(e=>monthKey(e.date)===m),expenseItems=monthItems.filter(e=>(e.type||'expense')==='expense'),incomeItems=monthItems.filter(e=>e.type==='income');
-  const spent=expenseItems.reduce((s,e)=>s+Number(e.amount),0),income=incomeItems.reduce((s,e)=>s+Number(e.amount),0),balance=income-spent;
+  const spent=expenseItems.reduce((s,e)=>s+Number(e.amount),0),income=incomeItems.reduce((s,e)=>s+Number(e.amount),0);
+  const totalIncome=state.expenses.filter(e=>e.type==='income').reduce((s,e)=>s+Number(e.amount),0),totalSpent=state.expenses.filter(e=>(e.type||'expense')==='expense').reduce((s,e)=>s+Number(e.amount),0),balance=totalIncome-totalSpent;
   $('#spentMetric').textContent=fmt(spent);$('#incomeMetric').textContent=fmt(income);$('#balanceMetric').textContent=fmt(balance);$('#balanceMetric').style.color=balance<0?'var(--danger)':'var(--ok)';
   $('#monthLabel').textContent=new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric'}).format(new Date(m+'-01'));
   const by={};expenseItems.forEach(e=>by[e.category]=(by[e.category]||0)+Number(e.amount));const max=Math.max(1,...Object.values(by));
@@ -182,6 +192,8 @@ document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{doc
 $('#date').value=new Date().toISOString().slice(0,10);$('#filterMonth').value=currentMonth();$('#entryType').addEventListener('change',refreshCategorySelect);
 function resetEntryForm(){editingId=null;$('#expenseForm').reset();$('#entryType').value='expense';refreshCategorySelect();$('#date').value=new Date().toISOString().slice(0,10);$('#formTitle').textContent='Добавить запись';$('#submitEntry').textContent='Добавить запись';$('#cancelEdit').classList.add('hidden');}
 $('#cancelEdit').addEventListener('click',resetEntryForm);
+$('#adjustBalance').addEventListener('click',()=>{const actual=Number($('#actualBalance').value);if(!Number.isFinite(actual)||actual<0){alert('Введите фактическую доступную сумму');return;}const totalIncome=state.expenses.filter(e=>e.type==='income').reduce((s,e)=>s+Number(e.amount),0),totalSpent=state.expenses.filter(e=>(e.type||'expense')==='expense').reduce((s,e)=>s+Number(e.amount),0),current=totalIncome-totalSpent,diff=Math.round((actual-current)*100)/100;if(Math.abs(diff)<0.01){alert('Остаток уже совпадает с указанной суммой');return;}const type=diff>0?'income':'expense',amount=Math.abs(diff),person=state.settings.people?.[0]||'Я';state.expenses.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),type,amount,category:'Другое',person,date:new Date().toISOString().slice(0,10),note:'Корректировка остатка',createdAt:Date.now()});save();$('#actualBalance').value='';renderAll();alert(type==='income'?`Добавлен доход «Другое»: ${fmt(amount)}`:`Добавлен расход «Другое»: ${fmt(amount)}`);});
+
 $('#expenseForm').addEventListener('submit',e=>{e.preventDefault();const data={type:$('#entryType').value,amount:Number($('#amount').value),category:$('#category').value,person:$('#person').value,date:$('#date').value,note:$('#note').value.trim()};if(editingId){const item=state.expenses.find(x=>x.id===editingId);if(item)Object.assign(item,data,{updatedAt:Date.now()});}else state.expenses.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),...data,createdAt:Date.now()});save();resetEntryForm();renderAll();document.querySelector('[data-tab="dashboard"]').click();});
 ['#filterType','#filterMonth','#filterCategory','#filterPerson'].forEach(s=>$(s).addEventListener('change',renderHistory));
 document.addEventListener('click',e=>{if(e.target.matches('.delete')){if(confirm('Удалить эту запись?')){state.expenses=state.expenses.filter(x=>x.id!==e.target.dataset.id);save();renderAll();}}if(e.target.matches('.edit')){const item=state.expenses.find(x=>x.id===e.target.dataset.id);if(!item)return;editingId=item.id;$('#entryType').value=item.type||'expense';refreshCategorySelect();$('#amount').value=item.amount;$('#category').value=item.category;$('#person').value=item.person;$('#date').value=item.date;$('#note').value=item.note||'';$('#formTitle').textContent='Редактировать запись';$('#submitEntry').textContent='Сохранить изменения';$('#cancelEdit').classList.remove('hidden');document.querySelector('[data-tab="add"]').click();window.scrollTo({top:0,behavior:'smooth'});}});
