@@ -143,7 +143,7 @@
 </div>
 
 <script>
-const EXPENSE_CATEGORIES = ['Продукты','Жильё','Транспорт','Дети','Здоровье','Кредиты','Рассрочки','Развлечения','Покупки','Цифровые продукты','Кафе','Другое'];
+const EXPENSE_CATEGORIES = ['Продукты','Жильё','Транспорт','Дети','Здоровье','Кредиты','Рассрочки','Погашение овердрафта','Развлечения','Покупки','Цифровые продукты','Кафе','Другое'];
 const INCOME_CATEGORIES = ['Зарплата','Подработка','Подарки','Возврат','Пособия','Другое'];
 const state = {
   expenses: JSON.parse(localStorage.getItem('family-expenses-items') || '[]'),
@@ -171,7 +171,7 @@ function renderDashboard(){
   const m=currentMonth(),monthItems=state.expenses.filter(e=>monthKey(e.date)===m),expenseItems=monthItems.filter(e=>(e.type||'expense')==='expense'),incomeItems=monthItems.filter(e=>e.type==='income');
   const spent=expenseItems.reduce((s,e)=>s+Number(e.amount),0),income=incomeItems.reduce((s,e)=>s+Number(e.amount),0);
   const totalIncome=state.expenses.filter(e=>e.type==='income').reduce((s,e)=>s+Number(e.amount),0),totalSpent=state.expenses.filter(e=>(e.type||'expense')==='expense').reduce((s,e)=>s+Number(e.amount),0),balance=totalIncome-totalSpent;
-  const overdraftTotal=state.expenses.filter(e=>e.type==='overdraft').reduce((s,e)=>s+Number(e.amount),0);
+  const overdraftUsed=state.expenses.filter(e=>e.type==='overdraft').reduce((s,e)=>s+Number(e.amount),0),overdraftPaid=state.expenses.filter(e=>(e.type||'expense')==='expense'&&e.category==='Погашение овердрафта').reduce((s,e)=>s+Number(e.amount),0),overdraftTotal=Math.max(0,overdraftUsed-overdraftPaid);
   $('#balanceMetric').textContent=fmt(balance);$('#balanceMetric').style.color=balance<0?'var(--danger)':'var(--ok)';$('#overdraftMetric').textContent=fmt(overdraftTotal);$('#overdraftMetric').style.color=overdraftTotal>0?'var(--danger)':'var(--text)';
   const by={};expenseItems.forEach(e=>by[e.category]=(by[e.category]||0)+Number(e.amount));const max=Math.max(1,...Object.values(by));
   $('#categoryChart').innerHTML=Object.keys(by).length?Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="chart-row"><div>${escapeHtml(k)}</div><div class="chart-track"><div class="chart-fill" style="width:${v/max*100}%"></div></div><div style="text-align:right;font-weight:700">${fmt(v)}</div></div>`).join(''):'<div class="empty">В этом месяце расходов пока нет.</div>';
